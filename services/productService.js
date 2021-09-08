@@ -4,13 +4,13 @@ const model = require('../models/productModel');
 
 const UNPROCESSABLE_ENTITY = 422;
 const MIN_NAME_LENGTH = 5;
-const validateProduct = Joi.object({
+const productSchema = Joi.object({
   name: Joi.string().min(MIN_NAME_LENGTH).required(),
   quantity: Joi.number().min(1).required(),
 });
 
 async function create(name, quantity) {
-  const { error } = validateProduct.validate({ name, quantity });
+  const { error } = productSchema.validate({ name, quantity });
 
   if (error) { 
     return {
@@ -32,13 +32,11 @@ async function create(name, quantity) {
   }
 
   const newProduct = model.create(name, quantity);
-
   return newProduct;
 };
 
 async function readAll() {
   const products = await model.readAll();
-
   return products;
 }
 
@@ -57,7 +55,7 @@ async function readById(id) {
 }
 
 async function update(id, name, quantity) {
-  const { error } = validateProduct.validate({ name, quantity });
+  const { error } = productSchema.validate({ name, quantity });
 
   if (error) { 
     return {
@@ -68,7 +66,6 @@ async function update(id, name, quantity) {
   }
 
   const updateProduct = await model.update(id, name, quantity);
-
   return updateProduct;
 }
 

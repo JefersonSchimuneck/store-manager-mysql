@@ -5,13 +5,13 @@ const stock = require('../models/productModel');
 
 const NOT_FOUND = 404;
 const UNPROCESSABLE_ENTITY = 422;
-const validateSale = Joi.array().items({
-  productId: Joi.string().required(),
+const saleSchema = Joi.array().items({
+  product_id: Joi.number().required(),
   quantity: Joi.number().min(1).required()
 });
 
-async function create(items) {
-  const { error } = validateSale.validate(items);
+async function create(itemsSold) {
+  const { error } = saleSchema.validate(itemsSold);
 
   if (error) { 
     return {
@@ -21,9 +21,9 @@ async function create(items) {
     };
   }
 
-  const { productId } = items[0];
-  const { name, quantity } = await stock.readById(productId);
-  const itemQuantity = quantity - items[0].quantity;
+  const { product_id } = itemsSold[0];
+  const { name, quantity } = await stock.readById(product_id);
+  const itemQuantity = quantity - itemsSold[0].quantity;
   const NO_STOCK = 0;
 
   if (itemQuantity < NO_STOCK) {
@@ -34,8 +34,8 @@ async function create(items) {
     };
   }
 
-  await stock.update(productId, name, itemQuantity);
-  const newSale = await model.create(items);
+  await stock.update(product_id, name, itemQuantity);
+  const newSale = await model.create(itemsSold);
 
   return newSale;
 }
@@ -61,7 +61,7 @@ async function readById(id) {
 }
 
 async function update(id, item) {
-  const { error } = validateSale.validate(item);
+  const { error } = saleSchema.validate(item);
 
   if (error) { 
     return {
@@ -87,10 +87,10 @@ async function destroy(id) {
     };
   }
 
-  const { productId, quantity } = saleDeleted.itensSold[0];
-  const product = await stock.readById(productId);
+  const { product_id, quantity } = saleDeleted[0];
+  const product = await stock.readById(product_id);
   const itemQuantity = product.quantity + quantity;
-  await stock.update(productId, product.name, itemQuantity);
+  await stock.update(product_id, product.name, itemQuantity);
   
   return saleDeleted;
 }

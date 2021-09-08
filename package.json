@@ -30,6 +30,7 @@
     "frisby": "^2.1.2",
     "jest": "^26.4.1",
     "mongodb": "^3.5.9",
+    "mysql2": "^2.3.0",
     "nodemon": "^2.0.4"
   },
   "devDependencies": {

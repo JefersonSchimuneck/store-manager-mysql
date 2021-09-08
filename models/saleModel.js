@@ -1,55 +1,68 @@
-const { ObjectId } = require('mongodb');
 const connection = require('./connection');
 
-async function create(items) {
-  const db = await connection();
-  const newSale = await db.collection('sales').insertOne({ itensSold: items });
+async function create(itemsSold) {
+  const newSale =  await connection.execute(
+    'INSERT INTO StoreManager.sales VALUES ()'
+  );
 
-  return newSale.ops[0];
+  const { insertId: id } = newSale[0];
+  const values = itemsSold.map(item => [id, item.product_id, item.quantity]);
+
+  await connection.query(
+    'INSERT INTO StoreManager.sales_products VALUES ?',
+    [values],
+  );
+
+  return { id, itemsSold };
 }
 
 async function readAll() {
-  const db = await connection();
-  const sales = await db.collection('sales').find().toArray();
-
+  // const [sales] = await connection.execute(
+  //   'SELECT * FROM StoreManager.sales',
+  // );
+  const [sales] = await connection.execute(
+    `SELECT t1.*, t2.product_id, t2.quantity
+    FROM StoreManager.sales AS t1
+    INNER JOIN StoreManager.sales_products AS t2
+    ON t1.id = t2.sale_id
+    ORDER BY id`
+  );
   return sales;
 }
 
 async function readById(id) {
-  if (!ObjectId.isValid(id)) return null;
-
-  const db = await connection();
-  const sale = await db.collection('sales').findOne(ObjectId(id));
-
-  if (!sale) return null;
-
+  // const [sale] = await connection.execute(
+  //   `SELECT * FROM StoreManager.sales_products
+  //   WHERE sale_id ='${id}'`
+  // );
+  const [sale] = await connection.execute(
+    `SELECT t1.*, t2.product_id, t2.quantity
+    FROM StoreManager.sales AS t1
+    INNER JOIN StoreManager.sales_products AS t2
+    ON t1.id = t2.sale_id
+    WHERE id = '${id}'`
+  );
+  if (!sale.length) return null;
   return sale;
 }
 
-async function update(id, item) {
-  if (!ObjectId.isValid(id)) return null;
+async function update(id, itemsSold) {
+  await connection.execute(
+    `UPDATE StoreManager.sales_products
+    SET quantity = '${itemsSold[0].quantity}'
+    WHERE sale_id = '${id}' AND product_id = '${itemsSold[0].product_id}'`
+  );
 
-  const db = await connection();
-  const updateSale = await db.collection('sales')
-    .findOneAndUpdate(
-      { _id: ObjectId(id) },
-      { $set: { itensSold: item } }, 
-      { returnOriginal: false}
-    );
-
-  if (!updateSale) return null;
-
-  return updateSale.value;
+  return { id, itemsSold };
 }
 
 async function destroy(id) {
-  if (!ObjectId.isValid(id)) return null;
-
-  const saleDeleted = await readById(id);
-  const db = await connection();
-  await db.collection('sales').deleteOne({ _id: ObjectId(id) });
-  
-  return saleDeleted;
+  const deletedSale = await readById(id);
+  await connection.execute(
+    `DELETE FROM StoreManager.sales
+    WHERE id = '${id}'`
+  );
+  return deletedSale;
 }
 
 module.exports = {

@@ -1,37 +1,35 @@
 const frisby = require('frisby');
-const { MongoClient } = require('mongodb');
+const mysql = require('mysql2/promise');
+require('dotenv').config();
 
-const mongoDbUrl = 'mongodb://localhost:27017';
+const products = [
+  { name: 'Martelo de Thor', quantity: 10 },
+  { name: 'Traje de encolhimento', quantity: 20 },
+  { name: 'Escudo do Capitão América', quantity: 30 }
+];
 const url = 'http://localhost:3000';
-const invalidId = 99999;
+const INVALID_ID = 99999;
 
 describe('1 - Crie um endpoint para o cadastro de produtos', () => {
-  let connection;
-  let db;
-
-  beforeAll(async () => {
-    connection = await MongoClient.connect(mongoDbUrl, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    db = connection.db('StoreManager');
-    await db.collection('products').deleteMany({});
-    await db.collection('sales').deleteMany({});
+  const connection = mysql.createPool({
+    host: process.env.MYSQL_HOST || 'mysql',
+    user: process.env.MYSQL_USER || 'root',
+    password: process.env.MYSQL_PASSWORD || 'password',
   });
 
   beforeEach(async () => {
-    await db.collection('products').deleteMany({});
-    await db.collection('sales').deleteMany({});
-    const myobj = { name: 'Martelo de Thor', quantity: 10 };
-    await db.collection('products').insertOne(myobj);
+    await connection.execute(
+      `INSERT INTO StoreManager.products (name, quantity)
+      VALUES ('${products[0].name}', '${products[0].quantity}')`
+    )
   });
 
   afterEach(async () => {
-    await db.collection('products').deleteMany({});
+    await connection.execute('DELETE FROM StoreManager.products');
   });
 
   afterAll(async () => {
-    await connection.close();
+    await connection.end();
   });
 
   it('Será validado que não é possível criar um produto com o nome menor que 5 caracteres', async () => {
@@ -51,7 +49,7 @@ describe('1 - Crie um endpoint para o cadastro de produtos', () => {
       });
   });
 
-  it('Será validado que não é possível criar um produto com o mesmo nomede outro já existente', async () => {
+  it('Será validado que não é possível criar um produto com o mesmo nome de outro já existente', async () => {
     await frisby
       .post(`${url}/products/`, {
         name: 'Martelo de Thor',
@@ -133,40 +131,32 @@ describe('1 - Crie um endpoint para o cadastro de produtos', () => {
         const quantityProduct = body.quantity;
         expect(productName).toEqual('Arco do Gavião Arqueiro');
         expect(quantityProduct).toEqual(1);
-        expect(body).toHaveProperty('_id');
+        expect(body).toHaveProperty('id');
       });
   });
 });
 
 describe('2 - Crie um endpoint para listar os produtos', () => {
-  let connection;
-  let db;
-
-  beforeAll(async () => {
-    connection = await MongoClient.connect(mongoDbUrl, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    db = connection.db('StoreManager');
-    await db.collection('products').deleteMany({});
-    await db.collection('sales').deleteMany({});
+  const connection = mysql.createPool({
+    host: process.env.MYSQL_HOST || 'mysql',
+    user: process.env.MYSQL_USER || 'root',
+    password: process.env.MYSQL_PASSWORD || 'password',
   });
 
   beforeEach(async () => {
-    await db.collection('products').deleteMany({});
-    await db.collection('sales').deleteMany({});
-    const products = [{ name: 'Martelo de Thor', quantity: 10 },
-      { name: 'Traje de encolhimento', quantity: 20 },
-      { name: 'Escudo do Capitão América', quantity: 30 }];
-    await db.collection('products').insertMany(products);
+    const values = products.map(({name, quantity}) => [name, quantity]);
+    await connection.query(
+      'INSERT INTO StoreManager.products (name, quantity) VALUES ?',
+      [values],
+    )
   });
 
   afterEach(async () => {
-    await db.collection('products').deleteMany({});
+    await connection.execute('DELETE FROM StoreManager.products');
   });
 
   afterAll(async () => {
-    await connection.close();
+    await connection.end();
   });
 
   it('Será validado que todos produtos estão sendo retornados', async () => {
@@ -193,7 +183,7 @@ describe('2 - Crie um endpoint para listar os produtos', () => {
   });
 
   it('Será validado que não é possível listar um produto que não existe', async () => {
-    await frisby.get(`${url}/products/${invalidId}`)
+    await frisby.get(`${url}/products/${INVALID_ID}`)
       .expect('status', 422)
       .then((secondResponse) => {
         const { json } = secondResponse;
@@ -216,7 +206,7 @@ describe('2 - Crie um endpoint para listar os produtos', () => {
       .then((response) => {
         const { body } = response;
         result = JSON.parse(body);
-        responseProductId = result._id;
+        responseProductId = result.id;
       });
 
     await frisby.get(`${url}/products/${responseProductId}`)
@@ -232,32 +222,25 @@ describe('2 - Crie um endpoint para listar os produtos', () => {
 });
 
 describe('3 - Crie um endpoint para atualizar um produto', () => {
-  let connection;
-  let db;
-
-  beforeAll(async () => {
-    connection = await MongoClient.connect(mongoDbUrl, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    db = connection.db('StoreManager');
-    await db.collection('products').deleteMany({});
-    await db.collection('sales').deleteMany({});
+  const connection = mysql.createPool({
+    host: process.env.MYSQL_HOST || 'mysql',
+    user: process.env.MYSQL_USER || 'root',
+    password: process.env.MYSQL_PASSWORD || 'password',
   });
 
   beforeEach(async () => {
-    await db.collection('products').deleteMany({});
-    await db.collection('sales').deleteMany({});
-    const myobj = { name: 'Martelo de Thor', quantity: 10 };
-    await db.collection('products').insertOne(myobj);
+    await connection.execute(
+      `INSERT INTO StoreManager.products (name, quantity)
+      VALUES ('${products[0].name}', '${products[0].quantity}')`
+    )
   });
 
   afterEach(async () => {
-    await db.collection('products').deleteMany({});
+    await connection.execute('DELETE FROM StoreManager.products');
   });
 
   afterAll(async () => {
-    await connection.close();
+    await connection.end();
   });
 
   it('Será validado que não é possível atualizar um produto com o nome menor que 5 caracteres', async () => {
@@ -374,7 +357,7 @@ describe('3 - Crie um endpoint para atualizar um produto', () => {
       .then((response) => {
         const { body } = response;
         result = JSON.parse(body);
-        resultProductId = result.products[0]._id;
+        resultProductId = result.products[0].id;
       });
 
     await frisby.put(`${url}/products/${resultProductId}`,
@@ -394,35 +377,28 @@ describe('3 - Crie um endpoint para atualizar um produto', () => {
 });
 
 describe('4 - Crie um endpoint para deletar um produto', () => {
-  let connection;
-  let db;
-
-  beforeAll(async () => {
-    connection = await MongoClient.connect(mongoDbUrl, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    db = connection.db('StoreManager');
-    await db.collection('products').deleteMany({});
-    await db.collection('sales').deleteMany({});
+  const connection = mysql.createPool({
+    host: process.env.MYSQL_HOST || 'mysql',
+    user: process.env.MYSQL_USER || 'root',
+    password: process.env.MYSQL_PASSWORD || 'password',
   });
 
   beforeEach(async () => {
-    await db.collection('products').deleteMany({});
-    await db.collection('sales').deleteMany({});
-    const myobj = { name: 'Martelo de Thor', quantity: 10 };
-    await db.collection('products').insertOne(myobj);
+    await connection.execute(
+      `INSERT INTO StoreManager.products (name, quantity)
+      VALUES ('${products[0].name}', '${products[0].quantity}')`
+    )
   });
 
   afterEach(async () => {
-    await db.collection('products').deleteMany({});
+    await connection.execute('DELETE FROM StoreManager.products');
   });
 
   afterAll(async () => {
-    await connection.close();
+    await connection.end();
   });
 
-  it('Será validado que não é possível deletar um produto com sucesso', async () => {
+  it('Será validado que é possível deletar um produto com sucesso', async () => {
     let result;
     let resultProductId;
 
@@ -432,7 +408,7 @@ describe('4 - Crie um endpoint para deletar um produto', () => {
       .then((response) => {
         const { body } = response;
         result = JSON.parse(body);
-        resultProductId = result.products[0]._id;
+        resultProductId = result.products[0].id;
       });
 
     await frisby.delete(`${url}/products/${resultProductId}`)
@@ -449,7 +425,7 @@ describe('4 - Crie um endpoint para deletar um produto', () => {
 
   it('Será validado que não é possível deletar um produto que não existe', async () => {
     await frisby
-      .delete(`${url}/products/${invalidId}`)
+      .delete(`${url}/products/${INVALID_ID}`)
       .expect('status', 422)
       .then((secondResponse) => {
         const { json } = secondResponse;
