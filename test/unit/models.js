@@ -31,12 +31,12 @@ describe('productModel.js', () => {
   });
 
   describe('when a product is created succesfully', async () => {
-    it('returns an object with an "_id" property', async () => {
+    it('returns an object with an "id" property', async () => {
       const { name, quantity } = productPayload;
       const response = await productModel.create(name, quantity);
 
       expect(response).to.be.an('object');
-      expect(response).to.have.a.property('_id');
+      expect(response).to.have.a.property('id');
     });
   });
 
@@ -50,13 +50,13 @@ describe('productModel.js', () => {
   });
 
   describe('when an id is used to search for a product', async () => {
-    it('returns an object with an "_id" property', async() => {
+    it('returns an object with an "id" property', async() => {
       const { name, quantity } = productPayload;
       const product = await productModel.create(name, quantity);
-      const response = await productModel.readById(product._id)
+      const response = await productModel.readById(product.id)
       
       expect(response).to.be.an('object');
-      expect(response).to.have.a.property('_id');
+      expect(response).to.have.a.property('id');
     });
   });
 
@@ -64,7 +64,7 @@ describe('productModel.js', () => {
     it('returns an object with updated data', async() => {
       const { name, quantity } = productPayload;
       const product = await productModel.create(name, quantity);
-      const response = await productModel.update(product._id, 'new_name', 10);
+      const response = await productModel.update(product.id, 'new_name', 10);
       
       expect(response).to.have.a.property('name', 'new_name');
     });
@@ -74,8 +74,8 @@ describe('productModel.js', () => {
     it('is removed from DB', async () => {
       const { name, quantity } = productPayload;
       const product = await productModel.create(name, quantity);
-      await productModel.destroy(product._id);
-      const response = await productModel.readById(product._id);
+      await productModel.destroy(product.id);
+      const response = await productModel.readById(product.id);
 
       expect(response).to.be.a('null')
     })
@@ -83,11 +83,6 @@ describe('productModel.js', () => {
 });
 
 describe('saletModel.js', () => {
-  const salePayload = [
-    { productId: 'id1', quantity: 10 },
-    { productId: 'id2', quantity: 20 }
-  ]
-
   before(async () => {
     const DBServer = new MongoMemoryServer();
     const URLMock = await DBServer.getUri();
@@ -107,11 +102,16 @@ describe('saletModel.js', () => {
   });
 
   describe('when a sale is created succesfully', async () => {
-    it('returns an object with an "_id" property', async () => {
-      const response = await saleModel.create(salePayload);
+    it('returns an object with an "id" property', async () => {
+      const { id: id1 } = await productModel.create("produto1", 10);
+      const { id: id2 } = await productModel.create("produto2", 20);
+      const response = await saleModel.create([
+        { product_id: id1, quantity: 10 },
+        { product_id: id2, quantity: 20 }
+      ]);
 
       expect(response).to.be.an('object');
-      expect(response).to.have.a.property('_id');
+      expect(response).to.have.a.property('id');
     });
   });
 
@@ -125,29 +125,44 @@ describe('saletModel.js', () => {
   });
 
   describe('when an id is used to search for a sale', async () => {
-    it('returns an object with an "_id" property', async() => {
-      const sale = await saleModel.create(salePayload);
-      const response = await saleModel.readById(sale._id)
+    it('returns an object with an "id" property', async() => {
+      const { id: id1 } = await productModel.create("produto1", 10);
+      const { id: id2 } = await productModel.create("produto2", 20);
+      const { id } = await saleModel.create([
+        { product_id: id1, quantity: 10 },
+        { product_id: id2, quantity: 20 }
+      ]);
+      const response = await saleModel.readById(id)
       
-      expect(response).to.be.an('object');
-      expect(response).to.have.a.property('_id');
+      expect(response).to.be.an('array');
+      expect(response[0]).to.have.a.property('id');
     });
   });
 
   describe('when a sale property is updated', async () => {
     it('returns an object with updated data', async() => {
-      const sale = await saleModel.create(salePayload);
-      const response = await saleModel.update(sale._id, [{ productId: 'id3', quantity: 10 }]);
-      
-      expect(response.itensSold[0]).to.have.a.property('productId', 'id3')
+      const { id: id1 } = await productModel.create("produto1", 10);
+      const { id: id2 } = await productModel.create("produto2", 20);
+      const { id } = await saleModel.create([
+        { product_id: id1, quantity: 10 },
+        { product_id: id2, quantity: 20 }
+      ]);
+      const response = await saleModel.update(id, [{ product_id: id1, quantity: 10 }]);
+
+      expect(response.itemsSold[0]).to.have.a.property('product_id', id1)
     });
   });
 
   describe('when a sale is deleted', async() => {
     it('is removed from DB', async () => {
-      const sale = await saleModel.create(salePayload);
-      await saleModel.destroy(sale._id);
-      const response = await saleModel.readById(sale._id);
+      const { id: id1 } = await productModel.create("produto1", 10);
+      const { id: id2 } = await productModel.create("produto2", 20);
+      const { id } = await saleModel.create([
+        { product_id: id1, quantity: 10 },
+        { product_id: id2, quantity: 20 }
+      ]);
+      await saleModel.destroy(id);
+      const response = await saleModel.readById(id);
 
       expect(response).to.be.a('null')
     })

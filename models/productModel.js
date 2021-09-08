@@ -31,7 +31,7 @@ async function update(id, name, quantity) {
     SET name = '${name}', quantity = '${quantity}'
     WHERE id = '${id}'`
   );
-  return { id, name, quantity };
+  return { id: parseInt(id), name, quantity };
 }
 
 async function destroy(id) {

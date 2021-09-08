@@ -18,8 +18,8 @@ describe('productController.js', () => {
     before(() => {
       req.body = productPayload;
       res.status = sinon.stub().returns(res);
-      res.json = sinon.stub().returns({ _id: '1', ...productPayload });
-      sinon.stub(productService, 'create').resolves({ _id: '1', ...productPayload });
+      res.json = sinon.stub().returns({ id: '1', ...productPayload });
+      sinon.stub(productService, 'create').resolves({ id: '1', ...productPayload });
     });
 
     after(() => {
@@ -30,15 +30,15 @@ describe('productController.js', () => {
       await productController.create(req, res);
 
       expect(res.status.calledWith(201)).to.be.equal(true);
-      expect(res.json.calledWith({ _id: '1', ...productPayload })).to.be.equal(true);
+      expect(res.json.calledWith({ id: '1', ...productPayload })).to.be.equal(true);
     });
   });
 
   describe('when products from DB are requested', async () => {
     before(() => {
       res.status = sinon.stub().returns(res);
-      res.json = sinon.stub().returns([{ _id: '1', ...productPayload }]);
-      sinon.stub(productService, 'readAll').resolves([{ _id: '1', ...productPayload }]);
+      res.json = sinon.stub().returns([{ id: '1', ...productPayload }]);
+      sinon.stub(productService, 'readAll').resolves([{ id: '1', ...productPayload }]);
     });
 
     after(() => {
@@ -49,7 +49,7 @@ describe('productController.js', () => {
       await productController.readAll(req, res);
 
       expect(res.status.calledWith(200)).to.be.equal(true);
-      expect(res.json.calledWith({products: [{ _id: '1', ...productPayload }]})).to.be.equal(true);
+      expect(res.json.calledWith({products: [{ id: '1', ...productPayload }]})).to.be.equal(true);
     });
   });
 
@@ -57,8 +57,8 @@ describe('productController.js', () => {
     before(() => {
       req.params = { id: '1' }
       res.status = sinon.stub().returns(res);
-      res.json = sinon.stub().returns({ _id: '1', ...productPayload });
-      sinon.stub(productService, 'readById').resolves({ _id: '1', ...productPayload });
+      res.json = sinon.stub().returns({ id: '1', ...productPayload });
+      sinon.stub(productService, 'readById').resolves({ id: '1', ...productPayload });
     });
 
     after(() => {
@@ -69,16 +69,16 @@ describe('productController.js', () => {
       await productController.readById(req, res);
 
       expect(res.status.calledWith(200)).to.be.equal(true);
-      expect(res.json.calledWith({ _id: '1', ...productPayload })).to.be.equal(true);
+      expect(res.json.calledWith({ id: '1', ...productPayload })).to.be.equal(true);
     });
   });
 
   describe('when a product property is updated', async () => {
     before(() => {
-      req.params = { id: '1' }
+      req.params = { id: 1 }
       res.status = sinon.stub().returns(res);
-      res.json = sinon.stub().returns({ _id: '1', ...productPayload });
-      sinon.stub(productService, 'update').resolves({ _id: '1', ...productPayload });
+      res.json = sinon.stub().returns({ id: 1, ...productPayload });
+      sinon.stub(productService, 'update').resolves({ id: 1, ...productPayload });
     });
 
     after(() => {
@@ -89,7 +89,7 @@ describe('productController.js', () => {
       await productController.update(req, res);
 
       expect(res.status.calledWith(200)).to.be.equal(true);
-      expect(res.json.calledWith({ _id: '1', ...productPayload })).to.be.equal(true);
+      expect(res.json.calledWith({ id: 1, ...productPayload })).to.be.equal(true);
     });
   });
 
@@ -97,8 +97,8 @@ describe('productController.js', () => {
     before(() => {
       req.params = { id: '1' }
       res.status = sinon.stub().returns(res);
-      res.json = sinon.stub().returns({ _id: '1', ...productPayload });
-      sinon.stub(productService, 'destroy').resolves({ _id: '1', ...productPayload });
+      res.json = sinon.stub().returns({ id: '1', ...productPayload });
+      sinon.stub(productService, 'destroy').resolves({ id: '1', ...productPayload });
     });
 
     after(() => {
@@ -108,15 +108,15 @@ describe('productController.js', () => {
       await productController.destroy(req, res);
 
       expect(res.status.calledWith(200)).to.be.equal(true);
-      expect(res.json.calledWith({ _id: '1', ...productPayload })).to.be.equal(true);
+      expect(res.json.calledWith({ id: '1', ...productPayload })).to.be.equal(true);
     })
   })
 });
 
 describe('saleController.js', () => {
   const salePayload = [
-    { productId: 'id1', quantity: 10 },
-    { productId: 'id2', quantity: 20 }
+    { product_id: 1, quantity: 10 },
+    { product_id: 2, quantity: 20 }
   ];
   const res = {};
   const req = {};
@@ -125,8 +125,8 @@ describe('saleController.js', () => {
     before(() => {
       req.body = salePayload;
       res.status = sinon.stub().returns(res);
-      res.json = sinon.stub().returns({ _id: '1', itensSold: salePayload });
-      sinon.stub(saleService, 'create').resolves({ _id: '1', itensSold: salePayload });
+      res.json = sinon.stub().returns({ id: 1, itensSold: salePayload });
+      sinon.stub(saleService, 'create').resolves({ id: 1, itensSold: salePayload });
     });
 
     after(() => {
@@ -137,15 +137,15 @@ describe('saleController.js', () => {
       await saleController.create(req, res);
 
       expect(res.status.calledWith(200)).to.be.equal(true);
-      expect(res.json.calledWith({ _id: '1', itensSold: salePayload })).to.be.equal(true);
+      expect(res.json.calledWith({ id: 1, itensSold: salePayload })).to.be.equal(true);
     });
   });
 
   describe('when sales from DB are requested', async () => {
     before(() => {
       res.status = sinon.stub().returns(res);
-      res.json = sinon.stub().returns([{ _id: '1', itensSold: salePayload }]);
-      sinon.stub(saleService, 'readAll').resolves([{ _id: '1', itensSold: salePayload }]);
+      res.json = sinon.stub().returns([{ id: 1, itensSold: salePayload }]);
+      sinon.stub(saleService, 'readAll').resolves([{ id: 1, itensSold: salePayload }]);
     });
 
     after(() => {
@@ -156,16 +156,16 @@ describe('saleController.js', () => {
       await saleController.readAll(req, res);
 
       expect(res.status.calledWith(200)).to.be.equal(true);
-      expect(res.json.calledWith({sales: [{ _id: '1', itensSold: salePayload }]})).to.be.equal(true);
+      expect(res.json.calledWith({sales: [{ id: 1, itensSold: salePayload }]})).to.be.equal(true);
     });
   });
 
   describe('when an id is used to search for a sale', async () => {
     before(() => {
-      req.params = { id: '1' }
+      req.params = { id: 1 }
       res.status = sinon.stub().returns(res);
-      res.json = sinon.stub().returns({ _id: '1', itensSold: salePayload });
-      sinon.stub(saleService, 'readById').resolves({ _id: '1', itensSold: salePayload });
+      res.json = sinon.stub().returns({ id: 1, itensSold: salePayload });
+      sinon.stub(saleService, 'readById').resolves({ id: 1, itensSold: salePayload });
     });
 
     after(() => {
@@ -176,16 +176,16 @@ describe('saleController.js', () => {
       await saleController.readById(req, res);
 
       expect(res.status.calledWith(200)).to.be.equal(true);
-      expect(res.json.calledWith({ _id: '1', itensSold: salePayload })).to.be.equal(true);
+      expect(res.json.calledWith({ id: 1, itensSold: salePayload })).to.be.equal(true);
     });
   });
 
   describe('when a sale property is updated', async () => {
     before(() => {
-      req.params = { id: '1' }
+      req.params = { id: 1 }
       res.status = sinon.stub().returns(res);
-      res.json = sinon.stub().returns({ _id: '1', itensSold: salePayload });
-      sinon.stub(saleService, 'update').resolves({ _id: '1', itensSold: salePayload });
+      res.json = sinon.stub().returns({ id: 1, itensSold: salePayload });
+      sinon.stub(saleService, 'update').resolves({ id: 1, itensSold: salePayload });
     });
 
     after(() => {
@@ -196,16 +196,16 @@ describe('saleController.js', () => {
       await saleController.update(req, res);
 
       expect(res.status.calledWith(200)).to.be.equal(true);
-      expect(res.json.calledWith({ _id: '1', itensSold: salePayload })).to.be.equal(true);
+      expect(res.json.calledWith({ id: 1, itensSold: salePayload })).to.be.equal(true);
     });
   });
 
   describe('when a sale is deleted', async() => {
     before(() => {
-      req.params = { id: '1' }
+      req.params = { id: 1 }
       res.status = sinon.stub().returns(res);
-      res.json = sinon.stub().returns({ _id: '1', itensSold: salePayload });
-      sinon.stub(saleService, 'destroy').resolves({ _id: '1', itensSold: salePayload });
+      res.json = sinon.stub().returns({ id: 1, itensSold: salePayload });
+      sinon.stub(saleService, 'destroy').resolves({ id: 1, itensSold: salePayload });
     });
 
     after(() => {
@@ -215,7 +215,7 @@ describe('saleController.js', () => {
       await saleController.destroy(req, res);
 
       expect(res.status.calledWith(200)).to.be.equal(true);
-      expect(res.json.calledWith({ _id: '1', itensSold: salePayload })).to.be.equal(true);
+      expect(res.json.calledWith({ id: 1, itensSold: salePayload })).to.be.equal(true);
     })
   })
 });

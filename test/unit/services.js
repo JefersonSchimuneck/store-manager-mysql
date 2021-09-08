@@ -62,7 +62,7 @@ describe('productService.js', () => {
     });
 
     it('returns an object with an "id" property', async() => {
-      const { _id } = productPayload;
+      const { id } = productPayload;
       const response = await productService.readById(id )
       
       expect(response).to.be.an('object');
@@ -117,12 +117,12 @@ describe('productService.js', () => {
 
 describe('saleService.js', () => {
   const salePayload = [
-    { product_id: 'id1', quantity: 10 },
-    { product_id: 'id2', quantity: 20 }
+    { product_id: 1, quantity: 10 },
+    { product_id: 2, quantity: 20 }
   ];
 
   const productPayload = {
-    id: 2,
+    id: 1,
     name: 'product',
     quantity: 10
   };
@@ -170,7 +170,7 @@ describe('saleService.js', () => {
   describe('when an id is used to search for a sale', async () => {
     before(() => {
       sinon.stub(saleModel, 'readById')
-        .resolves({ id: 1,itensSold: salePayload });
+        .resolves({ id: 1, itensSold: salePayload });
     });
   
     after(() => {
@@ -178,7 +178,7 @@ describe('saleService.js', () => {
     });
 
     it('returns an object with an "id" property', async() => {
-      const response = await saleService.readById('1');
+      const response = await saleService.readById(1);
       
       expect(response).to.be.an('object');
       expect(response).to.have.a.property('id');
@@ -191,13 +191,16 @@ describe('saleService.js', () => {
     ]
 
     before(() => {
+      sinon.stub(saleModel, 'create')
+        .resolves({ id: 2, itensSold: salePayload });
       sinon.stub(saleModel, 'update')
-        .resolves({ id: 1, itensSold: updatedsale });
+        .resolves({ id: 2, itensSold: updatedsale });
       sinon.stub(productModel, 'readById')
         .resolves(productPayload);
     });
   
     after(() => {
+      saleModel.create.restore();
       saleModel.update.restore();
       productModel.readById();
       sinon.restore();
@@ -213,8 +216,10 @@ describe('saleService.js', () => {
 
   describe('when a sale is deleted', async() => {
     before(() => {
-      sinon.stub(saleModel, 'destroy')
+      sinon.stub(saleModel, 'create')
         .resolves({ id: 1, itensSold: salePayload });
+      sinon.stub(saleModel, 'destroy')
+        .resolves([{ id: 1, product_id: 1, quantity: 2 }]);
       sinon.stub(productModel, 'readById')
         .resolves(productPayload);
       sinon.stub(productModel, 'update')
@@ -222,17 +227,21 @@ describe('saleService.js', () => {
     });
   
     after(() => {
+      saleModel.create.restore();
       saleModel.destroy.restore();
       productModel.readById.restore();
       productModel.update.restore();
       sinon.restore();
     });
 
-    it('is removed from DB', async () => {
-      const { id } = salePayload;
+    it('it returns an array', async () => {
+      const sale = await saleService.create(salePayload);
+      const { id } = sale;
+      console.log(id)
       const response = await saleService.destroy(id);
+      console.log(response[0])
 
-      expect(response).to.be.an('object');
+      expect(response).to.be.an('array');
     });
   });
 });

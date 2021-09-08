@@ -53,7 +53,7 @@ async function update(id, itemsSold) {
     WHERE sale_id = '${id}' AND product_id = '${itemsSold[0].product_id}'`
   );
 
-  return { id, itemsSold };
+  return { id: parseInt(id), itemsSold };
 }
 
 async function destroy(id) {
