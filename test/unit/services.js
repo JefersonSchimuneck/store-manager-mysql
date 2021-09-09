@@ -1,5 +1,8 @@
 const sinon = require('sinon');
 const { expect } = require('chai');
+const { Sequelize } = require('sequelize')
+const Importer = require('mysql-import')
+require('dotenv').config();
 
 const productModel = require('../../models/productModel');
 const productService = require('../../services/productService');
@@ -12,6 +15,26 @@ describe('productService.js', () => {
     name: 'product',
     quantity: 10
   };
+
+  before(async () => {
+    const {
+      MYSQL_USER,
+      MYSQL_PASSWORD,
+      MYSQL_HOST
+    } = process.env;
+
+    const importer = new Importer(
+      { user: MYSQL_USER, password: MYSQL_PASSWORD, host: MYSQL_HOST }
+    );
+  
+    await importer.import('./StoreManager.sql');
+
+    importer.disconnect();
+
+    sequelize = new Sequelize(
+      `mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@${MYSQL_HOST}:3306/StoreManager`
+    );
+  });
 
   describe('when a product is created succesfully', async () => {
     before(() => {
@@ -219,7 +242,7 @@ describe('saleService.js', () => {
       sinon.stub(saleModel, 'create')
         .resolves({ id: 1, itensSold: salePayload });
       sinon.stub(saleModel, 'destroy')
-        .resolves([{ id: 1, product_id: 1, quantity: 2 }]);
+        .resolves({ sale: [{ id: 1, product_id: 1, quantity: 2 }]});
       sinon.stub(productModel, 'readById')
         .resolves(productPayload);
       sinon.stub(productModel, 'update')
@@ -234,14 +257,12 @@ describe('saleService.js', () => {
       sinon.restore();
     });
 
-    it('it returns an array', async () => {
+    it('it returns an object', async () => {
       const sale = await saleService.create(salePayload);
       const { id } = sale;
-      console.log(id)
       const response = await saleService.destroy(id);
-      console.log(response[0])
-
-      expect(response).to.be.an('array');
+      console.log(response)
+      expect(response).to.be.an('object');
     });
   });
 });

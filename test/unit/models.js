@@ -2,6 +2,9 @@ const sinon = require('sinon');
 const { expect } = require('chai');
 const { MongoClient } = require('mongodb');
 const { MongoMemoryServer } = require('mongodb-memory-server');
+const { Sequelize } = require('sequelize')
+const Importer = require('mysql-import')
+require('dotenv').config();
 
 const productModel = require('../../models/productModel');
 const saleModel = require('../../models/saleModel');
@@ -23,6 +26,24 @@ describe('productModel.js', () => {
       });
   
     sinon.stub(MongoClient, 'connect').resolves(connectionMock);
+
+    const {
+      MYSQL_USER,
+      MYSQL_PASSWORD,
+      MYSQL_HOST
+    } = process.env;
+
+    const importer = new Importer(
+      { user: MYSQL_USER, password: MYSQL_PASSWORD, host: MYSQL_HOST }
+    );
+  
+    await importer.import('./StoreManager.sql');
+
+    importer.disconnect();
+
+    sequelize = new Sequelize(
+      `mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@${MYSQL_HOST}:3306/StoreManager`
+    );
   });
   
   after(() => {
@@ -134,8 +155,8 @@ describe('saletModel.js', () => {
       ]);
       const response = await saleModel.readById(id)
       
-      expect(response).to.be.an('array');
-      expect(response[0]).to.have.a.property('id');
+      expect(response).to.be.an('object');
+      expect(response.sale[0]).to.have.a.property('id');
     });
   });
 
@@ -149,7 +170,7 @@ describe('saletModel.js', () => {
       ]);
       const response = await saleModel.update(id, [{ product_id: id1, quantity: 10 }]);
 
-      expect(response.itemsSold[0]).to.have.a.property('product_id', id1)
+      expect(response.itemUpdated[0]).to.have.a.property('product_id', id1)
     });
   });
 

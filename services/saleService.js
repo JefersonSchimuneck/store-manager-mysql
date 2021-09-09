@@ -87,7 +87,7 @@ async function destroy(id) {
     };
   }
 
-  const { product_id, quantity } = saleDeleted[0];
+  const { product_id, quantity } = saleDeleted.sale[0];
   const product = await stock.readById(product_id);
   const itemQuantity = product.quantity + quantity;
   await stock.update(product_id, product.name, itemQuantity);

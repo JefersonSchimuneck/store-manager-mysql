@@ -4,22 +4,16 @@ async function create(itemsSold) {
   const newSale =  await connection.execute(
     'INSERT INTO StoreManager.sales VALUES ()'
   );
-
   const { insertId: id } = newSale[0];
   const values = itemsSold.map(item => [id, item.product_id, item.quantity]);
-
   await connection.query(
     'INSERT INTO StoreManager.sales_products VALUES ?',
     [values],
   );
-
   return { id, itemsSold };
 }
 
 async function readAll() {
-  // const [sales] = await connection.execute(
-  //   'SELECT * FROM StoreManager.sales',
-  // );
   const [sales] = await connection.execute(
     `SELECT t1.*, t2.product_id, t2.quantity
     FROM StoreManager.sales AS t1
@@ -31,10 +25,6 @@ async function readAll() {
 }
 
 async function readById(id) {
-  // const [sale] = await connection.execute(
-  //   `SELECT * FROM StoreManager.sales_products
-  //   WHERE sale_id ='${id}'`
-  // );
   const [sale] = await connection.execute(
     `SELECT t1.*, t2.product_id, t2.quantity
     FROM StoreManager.sales AS t1
@@ -43,17 +33,16 @@ async function readById(id) {
     WHERE id = '${id}'`
   );
   if (!sale.length) return null;
-  return sale;
+  return { sale };
 }
 
-async function update(id, itemsSold) {
+async function update(id, itemUpdated) {
   await connection.execute(
     `UPDATE StoreManager.sales_products
-    SET quantity = '${itemsSold[0].quantity}'
-    WHERE sale_id = '${id}' AND product_id = '${itemsSold[0].product_id}'`
+    SET quantity = '${itemUpdated[0].quantity}'
+    WHERE sale_id = '${id}' AND product_id = '${itemUpdated[0].product_id}'`
   );
-
-  return { id: parseInt(id), itemsSold };
+  return { id: parseInt(id), itemUpdated };
 }
 
 async function destroy(id) {

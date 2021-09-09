@@ -87,7 +87,7 @@ Você vai desenvolver todas as camadas da API (Models, Services caso necessário
 
 Através dessa aplicação, será possível realizar as operações básicas que se pode fazer em um determinado banco de dados: Criação, Leitura, Atualização e Exclusão (ou `CRUD`, para as pessoas mais mais íntimas 😜).
 
-Você deve utilizar o banco MongoDB para a gestão de dados. Além disso, a API deve ser RESTful.
+Você deve utilizar o banco SQL para a gestão de dados. Além disso, a API deve ser RESTful.
 
 ⚠️ **Dicas Importantes** ⚠️:
 
@@ -230,55 +230,43 @@ Isso está configurado para o avaliador funcionar.
 A conexão do banco local deverá conter os seguintes parâmetros:
 
 ```javascript
-const MONGO_DB_URL = 'mongodb://localhost:27017/StoreManager';
-const DB_NAME = 'StoreManager';
+const connection = mysql.createPool({
+  host: process.env.MYSQL_HOST,
+  user: process.env.MYSQL_USER,
+  password: process.env.MYSQL_PASSWORD,
+});
+```
+Na raiz do projeto crie um arquivo `.env` com as variáveis de ambiente. Por exemplo, caso o seu usuário SQL seja `nome` e a senha `1234` seu arquivo ficará desta forma:
+
+```
+MYSQL_HOST=localhost
+MYSQL_USER=nome
+MYSQL_PASSWORD=1234
 ```
 
-Para o avaliador funcionar altere a conexão do banco para:
-
-```javascript
-const MONGO_DB_URL = 'mongodb://mongodb:27017/StoreManager';
-const DB_NAME = 'StoreManager';
-```
 
 ### Tabelas
 
-O banco terá duas tabelas: produtos e vendas
+Na raiz do projeto existe o arquivo `StoreManager.sql` que será usado para rodar os testes. Você pode importá-lo localmente para testar o comportamento durante o desenvolvimento.
 
-A tabela de produtos deverá ter o seguinte nome: `products`
+O banco terá três tabelas: `products`, `sales` e `sales_products`.
 
-Os campos da tabela `products` terão esse formato:
+A tabela `products` tem o seguinte formato:
 
-```json
-{ "name": "Produto Silva", "quantity": 10 }
-```
+![Tabela Produtos](./public/tableproducts.png)
 
-A resposta do insert que deve retornar após a criação é parecida essa:
+(O id será gerado automaticamente)
 
-```json
-{ "_id": ObjectId("5f43cbf4c45ff5104986e81d"), "name": "Produto Silva", "quantity": 10 }
-```
+A tabela `sales` tem o seguinte formato:
 
-(O \_id será gerado automaticamente)
+![Tabela Vendas](./public/tablesales.png)
 
-A tabela de vendas deverá ter o seguinte nome: `sales`
+(O id e date são gerados automaticamente)
 
-Os campos da tabela `sales` terão esse formato:
+A tabela `sales_products`, é a tabela que faz o relacionamento `N:N` entre `products` e `sales` e tem o seguinte formato:
 
-```json
-{ "itensSold": [{ "productId": "5f43cbf4c45ff5104986e81d", "quantity": 2 }] }
-```
+![Tabela Vendas-Produtos](./public/tablesalesproducts.png)
 
-A resposta do insert que deve retornar após a criação é parecida essa:
-
-```json
-{
-  "_id": ObjectId("5f43cc53c45ff5104986e81e"),
-  "itensSold": [{ "productId": "5f43cbf4c45ff5104986e81d", "quantity": 2 }]
-}
-```
-
-(O \_id será gerado automaticamente)
 
 # Requisitos do projeto
 
@@ -330,7 +318,7 @@ Uma estratégia é pular todos os testes no início e ir implementando um teste 
 
 - O endpoint deve ser acessível através do caminho (`/products`);
 
-- Os produtos enviados devem ser salvos em uma **collection** do MongoDB;
+- Os produtos enviados devem ser salvos na tabela `products` do Banco de Dados;
 
 - O endpoint deve receber a seguinte estrutura:
 
@@ -345,8 +333,8 @@ O retorno da API de um produto cadastrado com sucesso deverá ser:
 
 ```json
 {
-  "_id": "5f43a7ca92d58904914656b6",
-  "name": "Produto do Batista",
+  "id": 1,
+  "name": "Produto",
   "quantity": 100
 }
 ```
@@ -363,7 +351,7 @@ O projeto deve rodar na porta `http://localhost:3000`
 
 - `quantity` deve ser um número inteiro maior que 0;
 
-- Cada produto deve ter um id que seja único e gerado no momento em que o recurso for criado. Você pode utilizar o ID gerado pelo MongoDB
+- Cada produto deve ter um id que seja único e gerado no momento em que o recurso for criado. Você pode utilizar o ID gerado pelo SQL
 
 - A resposta do endpoint em caso de sucesso deve ser o produto criado.
 
@@ -386,6 +374,7 @@ O projeto deve rodar na porta `http://localhost:3000`
     - Se o produto tiver uma quantidade menor que zero o resultado retornado deverá ser conforme exibido abaixo, com status http `422`:
 
 ![Menor que 0](./public/menorque0.png)
+
 (As contrabarras `\` estão escapando as aspas de dentro da string)
 
 - Será validado que não é possível criar um produto com quantidade igual a zero
@@ -393,6 +382,7 @@ O projeto deve rodar na porta `http://localhost:3000`
   - Se o produto tiver uma quantidade igual a zero o resultado retornado deverá ser conforme exibido abaixo, com status http `422`:
 
 ![Igual a zero](./public/igualazero.png)
+
 (As contrabarras `\` estão escapando as aspas de dentro da string)
 
 - Será validado que não é possível criar um produto com uma string no campo quantidade
@@ -400,6 +390,7 @@ O projeto deve rodar na porta `http://localhost:3000`
   - Se o produto tiver uma quantidade com o valor em string o resultado retornado deverá ser conforme exibido abaixo, com status http `422`:
 
 ![Quantidade como string](./public/quantidadecomostring.png)
+
 (As contrabarras `\` estão escapando as aspas de dentro da string)
 
 - Será validado que é possível criar um produto com sucesso
@@ -504,7 +495,7 @@ O projeto deve rodar na porta `http://localhost:3000`
 
 - O endpoint deve ser acessível através do caminho (`/sales`);
 
-- As vendas enviadas devem ser salvas em uma `collection` do MongoDB;
+- As vendas enviadas devem ser salvas na tabela `sales` e `sales_products` do Banco de dados;
 
 - Deve ser possível cadastrar a venda de vários produtos através da uma mesma requisição;
 
@@ -513,7 +504,7 @@ O projeto deve rodar na porta `http://localhost:3000`
 ```json
 [
   {
-  "productId": "product_id",
+  "product_id": "product_id",
   "quantity": "product_quantity",
   },
   ...
@@ -524,10 +515,10 @@ O retorno de uma venda cadastrada com sucesso deverá ser:
 
 ```json
 {
-  "_id": "5f43ba333200020b101fe4a0",
+  "id": 1,
   "itensSold": [
     {
-      "productId": "5f43ba273200020b101fe49f",
+      "product_id": 1,
       "quantity": 2
     }
   ]
@@ -536,7 +527,7 @@ O retorno de uma venda cadastrada com sucesso deverá ser:
 
 #### Observações Técnicas:
 
-- O `productId` devem ser igual ao `id` de um produto anteriormente cadastrado;
+- O `product_id` devem ser igual ao `id` de um produto anteriormente cadastrado;
 
 - `quantity` deve ser um número inteiro maior que 0;
 
@@ -613,7 +604,7 @@ O retorno de uma venda cadastrada com sucesso deverá ser:
 ```json
 [
   {
-    "productId": "5f3ff849d94d4a17da707008",
+    "product_id": 1,
     "quantity": 3
   }
 ]
