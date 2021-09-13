@@ -236,7 +236,7 @@ const connection = mysql.createPool({
   password: process.env.MYSQL_PASSWORD,
 });
 ```
-Na raiz do projeto crie um arquivo `.env` com as variáveis de ambiente. Por exemplo, caso o seu usuário SQL seja `nome` e a senha `1234` seu arquivo ficará desta forma:
+Para os testes rodarem, na raiz do projeto crie um arquivo `.env` com as variáveis de ambiente. Por exemplo, caso o seu usuário SQL seja `nome` e a senha `1234` seu arquivo ficará desta forma:
 
 ```
 MYSQL_HOST=localhost
@@ -247,7 +247,7 @@ MYSQL_PASSWORD=1234
 
 ### Tabelas
 
-Na raiz do projeto existe o arquivo `StoreManager.sql` que será usado para rodar os testes. Você pode importá-lo localmente para testar o comportamento durante o desenvolvimento.
+Na raiz do projeto existe o arquivo `StoreManager.sql` que será usado para rodar os testes. Você pode importá-lo localmente para testar o comportamento da sua aplicação durante o desenvolvimento.
 
 O banco terá três tabelas: `products`, `sales` e `sales_products`.
 
@@ -286,11 +286,15 @@ Você pode também instalar o plugin do `ESLint` no `VSCode`, bastar ir em exten
 
 Usaremos o [Jest]() e o [Frisby] para fazer os testes de api.
 
+Na seção [Conexão com o Banco](#conexão-com-o-banco), está especificado como a conexão deve ser feita, para que os testes rodem.
+
 Este projeto já vem configurado e com suas dependências
 
 Para poder executar os testes basta executar comando `npm tests` e o resultado será igual o abaixo:
 
 ![Testes](./public/testejestfrisby.png)
+
+**Atenção:** Após rodar os testes, seu banco de dados local será dropado, lembre-se de importá-lo novamente.
 
 ## Dica: desativando testes
 
@@ -361,6 +365,7 @@ O projeto deve rodar na porta `http://localhost:3000`
   - Se o produto tiver o nome menor que cinco caracteres o resultado retornado deverá ser conforme exibido abaixo, com um status http `422`:
 
 ![Nome menor que 5](./public/nomeMenorQue5.png)
+
 (As contrabarras `\` estão escapando as aspas de dentro da string)
 
 - Será validado que não é possível criar um produto com o mesmo nome de outro já existente

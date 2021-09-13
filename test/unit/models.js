@@ -1,11 +1,8 @@
 const sinon = require('sinon');
 const { expect } = require('chai');
-const { MongoClient } = require('mongodb');
-const { MongoMemoryServer } = require('mongodb-memory-server');
-const { Sequelize } = require('sequelize')
-const Importer = require('mysql-import')
 require('dotenv').config();
 
+const connection = require('../../models/connection');
 const productModel = require('../../models/productModel');
 const saleModel = require('../../models/saleModel');
 
@@ -15,43 +12,16 @@ describe('productModel.js', () => {
     quantity: 10
   };
 
-  before(async () => {
-    const DBServer = new MongoMemoryServer();
-    const URLMock = await DBServer.getUri();
-  
-    const connectionMock = await MongoClient
-      .connect(URLMock, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true
-      });
-  
-    sinon.stub(MongoClient, 'connect').resolves(connectionMock);
-
-    const {
-      MYSQL_USER,
-      MYSQL_PASSWORD,
-      MYSQL_HOST
-    } = process.env;
-
-    const importer = new Importer(
-      { user: MYSQL_USER, password: MYSQL_PASSWORD, host: MYSQL_HOST }
-    );
-  
-    await importer.import('./StoreManager.sql');
-
-    importer.disconnect();
-
-    sequelize = new Sequelize(
-      `mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@${MYSQL_HOST}:3306/StoreManager`
-    );
-  });
-  
-  after(() => {
-    MongoClient.connect.restore();
-    sinon.restore();
-  });
-
   describe('when a product is created succesfully', async () => {
+    before(async () => {
+      const execute = [{insertId: 1}];
+      sinon.stub(connection, 'execute').resolves(execute);
+    })
+
+    after(async () => {
+      connection.execute.restore();
+    });
+
     it('returns an object with an "id" property', async () => {
       const { name, quantity } = productPayload;
       const response = await productModel.create(name, quantity);
@@ -62,6 +32,15 @@ describe('productModel.js', () => {
   });
 
   describe('when products from DB are requested', async () => {
+    before(async () => {
+      const execute = [[{id: 1, ...productPayload}]];
+      sinon.stub(connection, 'execute').resolves(execute);
+    })
+
+    after(async () => {
+      connection.execute.restore();
+    });
+
     it('returns an array of objects', async() => {
       const response = await productModel.readAll();
 
@@ -71,6 +50,15 @@ describe('productModel.js', () => {
   });
 
   describe('when an id is used to search for a product', async () => {
+    before(async () => {
+      const execute = [[{id: 1, ...productPayload}]];
+      sinon.stub(connection, 'execute').resolves(execute);
+    })
+
+    after(async () => {
+      connection.execute.restore();
+    });
+  
     it('returns an object with an "id" property', async() => {
       const { name, quantity } = productPayload;
       const product = await productModel.create(name, quantity);
@@ -82,6 +70,15 @@ describe('productModel.js', () => {
   });
 
   describe('when a product property is updated', async () => {
+    before(async () => {
+      const execute = [[]];
+      sinon.stub(connection, 'execute').resolves(execute);
+    })
+
+    after(async () => {
+      connection.execute.restore();
+    });
+
     it('returns an object with updated data', async() => {
       const { name, quantity } = productPayload;
       const product = await productModel.create(name, quantity);
@@ -92,6 +89,15 @@ describe('productModel.js', () => {
   });
 
   describe('when a product is deleted', async() => {
+    before(async () => {
+      const execute = [[]];
+      sinon.stub(connection, 'execute').resolves(execute);
+    })
+
+    after(async () => {
+      connection.execute.restore();
+    });
+
     it('is removed from DB', async () => {
       const { name, quantity } = productPayload;
       const product = await productModel.create(name, quantity);
@@ -104,32 +110,25 @@ describe('productModel.js', () => {
 });
 
 describe('saletModel.js', () => {
-  before(async () => {
-    const DBServer = new MongoMemoryServer();
-    const URLMock = await DBServer.getUri();
-  
-    const connectionMock = await MongoClient
-      .connect(URLMock, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true
-      });
-  
-    sinon.stub(MongoClient, 'connect').resolves(connectionMock);
-  });
-  
-  after(() => {
-    MongoClient.connect.restore();
-    sinon.restore();
-  });
+  const salePayload = [
+    { product_id: 1, quantity: 10 },
+    { product_id: 2, quantity: 20 }
+  ]
 
   describe('when a sale is created succesfully', async () => {
+    before(async () => {
+      const execute = [{insertId: 1}];
+      sinon.stub(connection, 'execute').resolves(execute);
+      sinon.stub(connection, 'query').resolves();
+    })
+
+    after(async () => {
+      connection.execute.restore();
+      connection.query.restore();
+    });
+  
     it('returns an object with an "id" property', async () => {
-      const { id: id1 } = await productModel.create("produto1", 10);
-      const { id: id2 } = await productModel.create("produto2", 20);
-      const response = await saleModel.create([
-        { product_id: id1, quantity: 10 },
-        { product_id: id2, quantity: 20 }
-      ]);
+      const response = await saleModel.create([...salePayload]);
 
       expect(response).to.be.an('object');
       expect(response).to.have.a.property('id');
@@ -137,6 +136,15 @@ describe('saletModel.js', () => {
   });
 
   describe('when sales from DB are requested', async () => {
+    before(async () => {
+      const execute = [[{id: 1}, {id: 2}]];
+      sinon.stub(connection, 'execute').resolves(execute);
+    })
+
+    after(async () => {
+      connection.execute.restore();
+    });
+
     it('returns an array of objects', async() => {
       const response = await saleModel.readAll();
 
@@ -146,14 +154,17 @@ describe('saletModel.js', () => {
   });
 
   describe('when an id is used to search for a sale', async () => {
+    before(async () => {
+      const execute = [[{id: 1}]];
+      sinon.stub(connection, 'execute').resolves(execute);
+    })
+
+    after(async () => {
+      connection.execute.restore();
+    });
+
     it('returns an object with an "id" property', async() => {
-      const { id: id1 } = await productModel.create("produto1", 10);
-      const { id: id2 } = await productModel.create("produto2", 20);
-      const { id } = await saleModel.create([
-        { product_id: id1, quantity: 10 },
-        { product_id: id2, quantity: 20 }
-      ]);
-      const response = await saleModel.readById(id)
+      const response = await saleModel.readById(1)
       
       expect(response).to.be.an('object');
       expect(response.sale[0]).to.have.a.property('id');
@@ -161,29 +172,35 @@ describe('saletModel.js', () => {
   });
 
   describe('when a sale property is updated', async () => {
-    it('returns an object with updated data', async() => {
-      const { id: id1 } = await productModel.create("produto1", 10);
-      const { id: id2 } = await productModel.create("produto2", 20);
-      const { id } = await saleModel.create([
-        { product_id: id1, quantity: 10 },
-        { product_id: id2, quantity: 20 }
-      ]);
-      const response = await saleModel.update(id, [{ product_id: id1, quantity: 10 }]);
+    before(async () => {
+      const execute = [[]];
+      sinon.stub(connection, 'execute').resolves(execute);
+    })
 
-      expect(response.itemUpdated[0]).to.have.a.property('product_id', id1)
+    after(async () => {
+      connection.execute.restore();
+    });
+  
+    it('returns an object with updated data', async() => {
+      const response = await saleModel.update(1, [{ product_id: 1, quantity: 10 }]);
+
+      expect(response.itemUpdated[0]).to.have.a.property('product_id', 1)
     });
   });
 
   describe('when a sale is deleted', async() => {
+    before(async () => {
+      const execute = [[]];
+      sinon.stub(connection, 'execute').resolves(execute);
+    })
+
+    after(async () => {
+      connection.execute.restore();
+    });
+
     it('is removed from DB', async () => {
-      const { id: id1 } = await productModel.create("produto1", 10);
-      const { id: id2 } = await productModel.create("produto2", 20);
-      const { id } = await saleModel.create([
-        { product_id: id1, quantity: 10 },
-        { product_id: id2, quantity: 20 }
-      ]);
-      await saleModel.destroy(id);
-      const response = await saleModel.readById(id);
+      await saleModel.destroy(1);
+      const response = await saleModel.readById(1)
 
       expect(response).to.be.a('null')
     })

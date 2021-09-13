@@ -30,4 +30,3 @@ CREATE TABLE sales_products (
 )  ENGINE=INNODB;
 
 SET SQL_SAFE_UPDATES = 0;
-

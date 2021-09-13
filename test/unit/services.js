@@ -261,7 +261,6 @@ describe('saleService.js', () => {
       const sale = await saleService.create(salePayload);
       const { id } = sale;
       const response = await saleService.destroy(id);
-      console.log(response)
       expect(response).to.be.an('object');
     });
   });
