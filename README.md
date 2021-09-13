@@ -447,6 +447,7 @@ O projeto deve rodar na porta `http://localhost:3000`
   - Se o produto tiver o nome menor que cinco caracteres, o resultado retornado deverá ser conforme exibido abaixo, com status `422`:
 
 ![Atualizar com nome menor que cinco](./public/atualizarcomnomemenorque5.png)
+
 (As contrabarras `\` estão escapando as aspas de dentro da string)
 
 - Será validado que não é possível atualizar um produto com quantidade menor que zero
@@ -454,6 +455,7 @@ O projeto deve rodar na porta `http://localhost:3000`
   - Se o produto tiver o quantidade menor que zero, o resultado retornado deverá ser conforme exibido abaixo, com status http `422`:
 
 ![Atualizar menor que zero](./public/atualizarmenorque0.png)
+
 (As contrabarras `\` estão escapando as aspas de dentro da string)
 
 - Será validado que não é possível atualizar um produto com quantidade igual a zero
@@ -461,6 +463,7 @@ O projeto deve rodar na porta `http://localhost:3000`
   - Se o produto tiver o quantidade igual a zero, o resultado mostrado deverá ser conforme exibido abaixo, com status http `422`:
 
 ![Atualizar igual a zero](./public/atualizarigual0.png)
+
 (As contrabarras `\` estão escapando as aspas de dentro da string)
 
 - Será validado que não é possível atualizar um produto com uma string no campo quantidade
@@ -468,6 +471,7 @@ O projeto deve rodar na porta `http://localhost:3000`
   - Se o produto tiver o quantidade como string, o resultado retornado deverá ser conforme exibido abaixo, com status http `422`:
 
 ![Atualizar com string](./public/atualizarcomostring.png)
+
 (As contrabarras `\` estão escapando as aspas de dentro da string)
 
 - Será validado que é possível atualizar um produto com sucesso]**
