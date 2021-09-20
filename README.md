@@ -474,7 +474,7 @@ O projeto deve rodar na porta `http://localhost:3000`
 
 (As contrabarras `\` estão escapando as aspas de dentro da string)
 
-- Será validado que é possível atualizar um produto com sucesso]**
+- Será validado que é possível atualizar um produto com sucesso
 
   - Se o produto for atualizado com sucesso, o resultado retornado deverá ser conforme exibido abaixo, com status http `200`:
 
