@@ -27,9 +27,9 @@ describe('Bonus', () => {
     } = process.env;
 
     connection = mysql.createPool({
-      host: process.env.MYSQL_HOST || 'mysql',
-      user: process.env.MYSQL_USER || 'root',
-      password: process.env.MYSQL_PASSWORD || 'password',
+      host: process.env.MYSQL_HOST,
+      user: process.env.MYSQL_USER,
+      password: process.env.MYSQL_PASSWORD,
     });
 
     const importer = new Importer(
