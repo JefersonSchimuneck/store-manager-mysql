@@ -87,7 +87,7 @@ Você vai desenvolver todas as camadas da API (Models, Services caso necessário
 
 Através dessa aplicação, será possível realizar as operações básicas que se pode fazer em um determinado banco de dados: Criação, Leitura, Atualização e Exclusão (ou `CRUD`, para as pessoas mais mais íntimas 😜).
 
-Você deve utilizar o banco SQL para a gestão de dados. Além disso, a API deve ser RESTful.
+Você deve utilizar o banco MySQL para a gestão de dados. Além disso, a API deve ser RESTful.
 
 ⚠️ **Dicas Importantes** ⚠️:
 
@@ -355,7 +355,7 @@ O projeto deve rodar na porta `http://localhost:3000`
 
 - `quantity` deve ser um número inteiro maior que 0;
 
-- Cada produto deve ter um id que seja único e gerado no momento em que o recurso for criado. Você pode utilizar o ID gerado pelo SQL
+- Cada produto deve ter um id que seja único e gerado no momento em que o recurso for criado. Você pode utilizar o ID gerado pelo MySQL
 
 - A resposta do endpoint em caso de sucesso deve ser o produto criado.
 
