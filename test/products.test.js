@@ -1,7 +1,6 @@
 const frisby = require('frisby');
 const mysql = require('mysql2/promise');
-const { Sequelize } = require('sequelize')
-const Importer = require('mysql-import')
+const Importer = require('mysql-import');
 require('dotenv').config();
 
 describe('Products', () => {
@@ -34,10 +33,6 @@ describe('Products', () => {
     await importer.import('./StoreManager.sql');
 
     importer.disconnect();
-
-    sequelize = new Sequelize(
-      `mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@${MYSQL_HOST}:3306/StoreManager`
-    );
   });
 
   beforeEach(async () => {
@@ -53,9 +48,8 @@ describe('Products', () => {
   });
 
   afterAll(async () => {
-    await sequelize.query('DROP DATABASE StoreManager;', { type: 'RAW' });
+    await connection.execute('DROP DATABASE StoreManager')
     await connection.end();
-    await sequelize.close();
   });
 
   describe('1 - Crie um endpoint para o cadastro de produtos', () => { 

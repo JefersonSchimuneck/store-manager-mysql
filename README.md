@@ -476,7 +476,7 @@ O projeto deve rodar na porta `http://localhost:3000`
 
 - Será validado que é possível atualizar um produto com sucesso]**
 
-  - Se o produto atualizado com sucesso, o resultado mostrretornadoado deverá ser conforme exibido abaixo, com status http `200`:
+  - Se o produto for atualizado com sucesso, o resultado retornado deverá ser conforme exibido abaixo, com status http `200`:
 
 ![Atualizado com sucesso](./public/atualizarcomsucesso.png)
 

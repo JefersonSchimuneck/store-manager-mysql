@@ -1,8 +1,8 @@
 const fs = require('fs').promises;
 const util = require('util');
 const { exec: callbackExec } = require('child_process');
-const { Sequelize } = require('sequelize')
-const Importer = require('mysql-import')
+const mysql = require('mysql2/promise');
+const Importer = require('mysql-import');
 const path = require('path');
 require('dotenv').config();
 
@@ -17,12 +17,20 @@ function readCoverageFile() {
 }
 
 describe('Bonus', () => {
+  let connection;
+
   beforeAll(async () => {
     const {
       MYSQL_USER,
       MYSQL_PASSWORD,
       MYSQL_HOST
     } = process.env;
+
+    connection = mysql.createPool({
+      host: process.env.MYSQL_HOST || 'mysql',
+      user: process.env.MYSQL_USER || 'root',
+      password: process.env.MYSQL_PASSWORD || 'password',
+    });
 
     const importer = new Importer(
       { user: MYSQL_USER, password: MYSQL_PASSWORD, host: MYSQL_HOST }
@@ -31,10 +39,6 @@ describe('Bonus', () => {
     await importer.import('./StoreManager.sql');
 
     importer.disconnect();
-
-    sequelize = new Sequelize(
-      `mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@${MYSQL_HOST}:3306/StoreManager`
-    );
   });
 
   afterEach(async () => {
@@ -42,8 +46,8 @@ describe('Bonus', () => {
   });
 
   afterAll(async () => {
-    await sequelize.query('DROP DATABASE StoreManager;', { type: 'RAW' });
-    await sequelize.close();
+    await connection.execute('DROP DATABASE StoreManager')
+    await connection.end();
   });
   
   describe('11 - Escreva testes para seus models', () => {

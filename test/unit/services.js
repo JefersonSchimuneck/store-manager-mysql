@@ -1,6 +1,5 @@
 const sinon = require('sinon');
 const { expect } = require('chai');
-const { Sequelize } = require('sequelize')
 const Importer = require('mysql-import')
 require('dotenv').config();
 
@@ -16,6 +15,8 @@ describe('productService.js', () => {
     quantity: 10
   };
 
+  let connection;
+
   before(async () => {
     const {
       MYSQL_USER,
@@ -30,10 +31,6 @@ describe('productService.js', () => {
     await importer.import('./StoreManager.sql');
 
     importer.disconnect();
-
-    sequelize = new Sequelize(
-      `mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@${MYSQL_HOST}:3306/StoreManager`
-    );
   });
 
   describe('when a product is created succesfully', async () => {
